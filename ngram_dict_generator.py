@@ -1,24 +1,30 @@
 import os
 import json
-from n_gram import *
 
-directory = 'trace_logs'
+
 # This flag indicates whether to filter out switch and sched_yield
 filter_flag = True
 n_gram_len = 6
 APP_NAME = 'python3'
 
-
-dict_1 = {'a': 1}
-dict_2 = {'b': 1}
-dict_3 = {'c': 1}
-
-dict_list= [dict_1, dict_2, dict_3]
-
-value = [1, 2, 3]
+directory_name = 'trace_logs'
 
 
-ef parse_ngram(filename, l=6):
+def generate_n_gram(n_gram, c, l):
+
+    if len(n_gram) < l:
+        n_gram.append(c)
+        return n_gram
+
+    elif len(n_gram) == l:
+        n_gram = n_gram[1:]
+        n_gram.append(c)
+        return n_gram
+
+    else:
+        raise ValueError
+
+def parse_ngram(filename, l=6):
     """ This function reads the tracefile and generate a profile of unique n_grams
     INPUT: filename --> name of the tracefile
            l --> length of ngram
@@ -39,7 +45,6 @@ ef parse_ngram(filename, l=6):
                 except:
                     raise ValueError
                 if app_name == APP_NAME:
-
                     try:
                         key_action =line_list[6]
                     except:
@@ -66,46 +71,32 @@ ef parse_ngram(filename, l=6):
     total = sum(ngram_dict.values())
     factor = 1 / total
     ngram_dict_normalized = {k: v * factor for k, v in ngram_dict.items()}
+
     return ngram_dict, ngram_dict_normalized
 
 
-def write_to_json(directory):
-    for filename in os.listdir(directory):
-        print(filename)
-        filename = directory + "/" + filename
-        _, ngram_dict_n = parse_ngram(filename, n_gram_len)
 
-        with open('data.json', 'w') as fp:
-            json.dump(ngram_dict_n, fp)
+
 
 def main():
-    # write_to_json(directory)
-    # with open("data.json") as fp:
-    #     dict = json.load(fp)
-    # print(dict)
 
+    trace_fv_dict = {}
+    for filename in os.listdir(directory_name):
+        print(filename)
+        print(filename.split('_'))
+        filename_c= directory_name + "/" + filename
+        ngram_dict, ngram_dict_n = parse_ngram(filename_c, n_gram_len)
+        print(ngram_dict)
+        trace_fv_dict[filename] = ngram_dict
 
-    for index in range(1):
-        # print(index)
-        dict = {index: dict_list[index]}
-        # print(dict)
-        if os.path.isfile('data.json'):
-            with open("data.json") as fp:
-                dict_original = json.load(fp)
-                dict_original.update(dict)
+    print(trace_fv_dict)
 
-            print('yes')
-        else:
-            print('No')
+    with open('trace_logs_4.json', 'w') as fp:
+        json.dump(trace_fv_dict, fp)
 
-        with open('data.json', 'a') as fp:
-            json.dump(dict, fp)
-
-
-    #     print(dict)
-    #     # with open('data.json', 'a') as fp:
-    #     #     json.dump(dict, fp)
-
+    #with open('trace_logs_test.json', 'r') as fp:
+        # dict=json.load(fp)
+        # print(dict['co1_centos_db1_1'])
 
 
 if __name__ == "__main__":

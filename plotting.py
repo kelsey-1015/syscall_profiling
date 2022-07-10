@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
+import matplotlib
 import numpy as np
 import json
-
 
 def histogram_plot(syscall_count_dict):
     frequecy  = list(syscall_count_dict.values())
@@ -33,31 +33,66 @@ def histogram_plot(syscall_count_dict):
 
 def box_plot(data_to_plot, x_labels):
     """Input: data_to_plot: it can be a nested list or a list"""
-    Title = "Stability of n-gram frequency distribution over different platforms of APP3"
+    Title = "Stability of n-gram profiles of different training datassets"
+    font = {'family': 'normal',
+            'weight': 'bold',
+            'size': 15}
+
+    matplotlib.rc('font', **font)
     fig = plt.figure()
     ax = fig.add_subplot(111)
-    bp = ax.boxplot(data_to_plot)
+    bp = ax.boxplot(data_to_plot, vert= True, notch=True, patch_artist=True)
+    for box in bp['boxes']:
+        box.set(color='red')
+        box.set(facecolor='white')
     ax.set_xticklabels(x_labels)
-    plt.xlabel('platform os')
+    # plt.xlabel('App')
     plt.ylabel('cross entropy')
-    plt.title(Title)
+    # plt.title(Title)
     plt.grid()
     plt.show()
-    # plt.savefig('co2.png')
+
+
+def plot_cdf(input_list):
+    """This function plots cdf function of a list"""
+    data = np.array(input_list)
+    print(len(data))
+
+    # sort the data:
+    data_sorted = np.sort(data)
+    print(data_sorted)
+
+    # calculate the proportional values of samples
+    p = 1. * np.arange(len(data_sorted)) / (len(data_sorted) - 1)
+    print(p)
+
+
+    # plot the sorted data:
+    fig = plt.figure()
+    # ax1 = fig.add_subplot(121)
+    # ax1.plot(p, data_sorted)
+    # ax1.set_xlabel('$p$')
+    # ax1.set_ylabel('$x$')
+
+    ax2 = fig.add_subplot(111)
+    ax2.set_xscale('log')
+    ax2.plot(data_sorted, p, color='red')
+    ax2.grid()
+    #
+    ax2.set_xlabel('Number of occurrences of each n-gram entry')
+    ax2.set_ylabel('Probability')
+    #
+    plt.show()
 
 def main():
-    label_list = ['ubuntu-debian', 'debian-centos', 'ubuntu-centos','debian', 'ubuntu',
-                  'centos']
-    outpath = 'ce_nestedlist_co4.json'
-    ## The following part reorder the labels and data boxes to make them align among various apps
-    data_to_plot = json.load(open(outpath))
-    label_data_dict = dict(zip(label_list, data_to_plot))
-    label_list_new = ['ubuntu-debian', 'ubuntu-centos', 'debian-centos', 'ubuntu', 'debian', 'centos']
-    data_to_plot_new = [label_data_dict[l] for l in label_list_new]
-    box_plot(data_to_plot_new, label_list_new)
+    with open('co_self_variance.json', 'r') as fp:
+        data_plot_dict = json.load(fp)
+    # data_plot_dict = json.load('co_self_variance.json')
+    # label_list = ['App1', 'App2', 'App3']
+    # co_list = ['co1', 'co2', 'co3']
+    # data_to_plot = [data_plot_dict[c] for c in co_list]
     # box_plot(data_to_plot, label_list)
 
-    # box_plot(ce_ml1_list)
-    pass
+    plot_cdf()
 if __name__ == "__main__":
     main()
